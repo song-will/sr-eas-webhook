@@ -1,0 +1,20 @@
+{
+  "name": "eas-hook",
+  "version": "1.0.0",
+  "description": "EAS Build Webhook 服务器，构建完成后推送通知到企业微信群",
+  "type": "module",
+  "scripts": {
+    "deploy": "vercel --prod"
+  },
+  "keywords": ["eas", "expo", "webhook", "wechat", "企业微信"],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.17.1",
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "safe-compare": "^1.0.4"
+  },
+  "devDependencies": {
+    "vercel": "^39.0.0"
+  }
+}
