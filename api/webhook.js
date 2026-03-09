@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import QRCode from 'qrcode';
 import safeCompare from 'safe-compare';
 
 function getRawBody(req) {
@@ -66,49 +65,29 @@ export default async function handler(req, res) {
   const appBuildVersion = metadata.appBuildVersion || '-';
 
   try {
-    const qrBuffer = await QRCode.toBuffer(buildUrl, {
-      type: 'png',
-      width: 256,
-      margin: 2,
-    });
+    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&margin=2&data=${encodeURIComponent(buildUrl)}`;
+    const markdownContent = `# EAS 构建成功
 
-    const base64Image = qrBuffer.toString('base64');
-    const md5Hash = crypto.createHash('md5').update(qrBuffer).digest('hex');
+**项目**: ${projectName}
+**平台**: ${platform}
+**版本**: ${appVersion} (${appBuildVersion})
 
-    const imagePayload = {
-      msgtype: 'image',
-      image: { base64: base64Image, md5: md5Hash },
-    };
+[点击下载](${buildUrl})
 
-    const imageRes = await fetch(wechatWebhook, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(imagePayload),
-    });
+![二维码](${qrImageUrl})`;
 
-    if (!imageRes.ok) {
-      const errText = await imageRes.text();
-      throw new Error(`企业微信图片发送失败: ${imageRes.status} ${errText}`);
-    }
-
-    const textContent = `【EAS 构建成功】
-项目: ${projectName}
-平台: ${platform}
-版本: ${appVersion} (${appBuildVersion})
-下载: ${buildUrl}`;
-
-    const textRes = await fetch(wechatWebhook, {
+    const res = await fetch(wechatWebhook, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        msgtype: 'text',
-        text: { content: textContent },
+        msgtype: 'markdown_v2',
+        markdown_v2: { content: markdownContent },
       }),
     });
 
-    if (!textRes.ok) {
-      const errText = await textRes.text();
-      throw new Error(`企业微信文本发送失败: ${textRes.status} ${errText}`);
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`企业微信推送失败: ${res.status} ${errText}`);
     }
 
     console.log(`[eas-hook] 已推送: ${projectName} ${platform}`);
