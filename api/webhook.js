@@ -72,11 +72,11 @@ export default async function handler(req, res) {
 **平台**: ${platform}
 **版本**: ${appVersion} (${appBuildVersion})
 
-[点击下载](${buildUrl})
+**下载链接**: ${buildUrl}
 
 ![二维码](${qrImageUrl})`;
 
-    const res = await fetch(wechatWebhook, {
+    const wechatRes = await fetch(wechatWebhook, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -85,9 +85,9 @@ export default async function handler(req, res) {
       }),
     });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`企业微信推送失败: ${res.status} ${errText}`);
+    if (!wechatRes.ok) {
+      const errText = await wechatRes.text();
+      throw new Error(`企业微信推送失败: ${wechatRes.status} ${errText}`);
     }
 
     console.log(`[eas-hook] 已推送: ${projectName} ${platform}`);
